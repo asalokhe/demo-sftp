@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<flow name="writeOtherData" doc:id="7515780e-e912-45fd-a2e0-ba85728b9674" >
+		<set-payload value='#[output application/json
+---
+[
+	{
+		"Name":  "AMS",
+		"Email": "AMS.SSR@devoteam.com"
+	},
+	{
+		"Name":  "ABC",
+		"Email": "ABC.PQR@google.com"
+	}
+]]' doc:name="Set Payload" doc:id="d4aed8cf-1b86-4f4a-bc13-4131d7369897" />
+		<scripting:execute doc:name="Throw Exception" doc:id="16f7faee-22d1-412f-af38-19ef8e4bd577" engine="groovy">
+					<error-mapping targetType="APP:SCRIPTING" />
+					<scripting:code>throw new Exception(&quot;getAmerican error&quot;);</scripting:code>
+				</scripting:execute>
+		<logger level="ERROR" doc:name="Logger" doc:id="5bb73ea5-becd-4245-8c1d-a4a9bb6ddc4b" />
+	</flow>
+	<flow name="writeDepartmentData" doc:id="0be55daa-9eb1-4c18-bfb0-f7749cd80ad5" >
+		<set-payload value='#[output application/json
+---
+[
+	{
+		"Department":  "Architecture &amp; Implementation",
+		"Head": "Head1@devoteam.com"
+	},
+	{
+		"Department":  "R&amp;D",
+		"Head": "Head2@google.com"
+	}
+]]' doc:name="Set Payload" doc:id="213caa00-4317-4da1-90be-8bb07b120c41" />
+		<logger level="DEBUG" doc:name="Logger" doc:id="80a9f068-8ec7-46d8-854e-709d0a260085" />
+		<sftp:write doc:name="Write Department Details to SFTP Location" doc:id="94111805-e8ef-4cf1-af33-8c75595ea152" config-ref="SFTP_Config" path="#[p('sftp.temppath') ++ &quot;fileprocessed.csv&quot;]" createParentDirectories="false" lock="true">
+					<error-mapping targetType="APP:SFTPCON" />
+			<sftp:content><![CDATA[#[output application/csv
+---
+payload]]]></sftp:content>
+				</sftp:write>
+	</flow>
+	<flow name="writeCustomerData" doc:id="65e2974b-b829-4436-a659-c961bdf46fd9" >
+		<set-payload value='#[output application/json
+---
+[
+	{
+		"Name":  "AMS",
+		"Email": "AMS.SSR@devoteam.com"
+	},
+	{
+		"Name":  "ABC",
+		"Email": "ABC.PQR@google.com"
+	}
+]]' doc:name="Set Payload" doc:id="fc138632-4b33-4a78-9838-d9dad8cb0ba2" />
+		<logger level="DEBUG" doc:name="Logger" doc:id="13e715b4-f89b-4eaa-9544-6bf3b1056729" message="#[payload]" />
+		<sftp:write doc:name="Write Customer Details to SFTP Location" doc:id="a57ba9ff-9ab3-4b5a-8005-bdc84d977095" config-ref="SFTP_Config" path="#[p('sftp.temppath') ++ &quot;customer.csv&quot;]" createParentDirectories="false" lock="true">
+					<error-mapping targetType="APP:SFTPCON" />
+			<sftp:content><![CDATA[#[output application/csv
+---
+payload]]]></sftp:content>
+				</sftp:write>
+	</flow>
+	<flow name="demo-sftp-implementationFlow" doc:id="07c600fe-0a1b-4e9a-b5c2-7707806339e5" >
+		<scatter-gather doc:name="Scatter-Gather" doc:id="cdffa8e0-84ac-466d-a1c9-35abf075b23f" >
+			<route>
+				<flow-ref doc:name="Flow Reference" doc:id="5f4a3510-54ea-459d-8fc3-c35bcc083476" name="writeCustomerData" />
+			</route>
+			<route>
+				<flow-ref doc:name="Flow Reference" doc:id="9ed68af6-0891-48c7-b7cb-130a908072de" name="writeDepartmentData" />
+			</route>
+			<route>
+				<flow-ref doc:name="Flow Reference" doc:id="12f493da-6d87-4cf9-9617-af747b661f88" name="writeOtherData" />
+			</route>
+		</scatter-gather>
+		<sftp:list doc:name="List" doc:id="cb4ae7ad-991d-420c-a755-e17f11fb8e18" config-ref="SFTP_Config" target="fileNames" targetValue="#[payload as Array]" directoryPath="#[p('sftp.temppath')]"/>
+		<choice doc:name="Choice" doc:id="66a90178-a994-4caa-9b29-06fa55c88cb6" >
+			<when expression='#[vars.errorFlag == "false"]'>
+				<foreach doc:name="Iterate over Number of Files" doc:id="62300ec4-d00e-4a2f-9ea5-ee712bdab383" collection="#[vars.fileNames]">
+					<sftp:move doc:name="Move Files from tmp folder to root folder" doc:id="299e8402-046a-4ff6-9aef-2a10672d048b" config-ref="SFTP_Config" sourcePath="#[p('sftp.temppath') ++ attributes.fileName]" targetPath="#[p('sftp.root')]" overwrite="true"/>
+				</foreach>
+			</when>
+			<otherwise>
+				<foreach doc:name="Iterate over Number of Files" doc:id="310505b0-88c2-48c3-a866-0e18b4d2c3dc" collection="#[vars.fileNames]" >
+					<sftp:delete doc:name="Delete" doc:id="b95274a2-fae8-47bd-9f97-5c361da0faab" config-ref="SFTP_Config" path="#[p('sftp.temppath') ++ attributes.fileName]">
+						<reconnect count="5" />
+					</sftp:delete>
+				</foreach>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

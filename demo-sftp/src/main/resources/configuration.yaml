@@ -1,0 +1,12 @@
+db:
+  derby:
+    url: "jdbc:derby:memory:training"
+    driver: "org.apache.derby.jdbc.EmbeddedDriver"
+
+sftp:
+  host: "localhost"
+  port: "22"
+  username: "tester"
+  password: "password"
+  temppath: "\\stageout\\"
+  root: "\\out\\"

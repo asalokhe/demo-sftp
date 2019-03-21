@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b34eac31-5de4-44ae-be60-b81c8242bba8" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="659474ac-22fb-4bab-81bf-9c3498f630e8" >
+		<sftp:connection host="${sftp.host}" port="${sftp.port}" username="${sftp.username}" password="${sftp.password}" />
+	</sftp:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="3c07cee5-c752-42fe-9352-1c95595b157f" file="configuration.yaml" />
+	<configuration doc:name="Configuration" doc:id="7924a2f0-4d63-4dcb-9b62-6b93a735c6f4" defaultErrorHandler-ref="myGlobalErrorHandler" />
+</mule>

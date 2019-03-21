@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<error-handler name="myGlobalErrorHandler" doc:id="ffa517b5-1d29-4ca0-8c87-ef43b6ee7e19" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b0edefae-9501-4e6a-ba8b-44072f44507e" >
+			<logger level="ERROR" doc:name="Logger" doc:id="01a55149-7c1b-473d-85ac-ed81c50fcb65" message="#['\n\n***globalError_Handler Continue***\nError description: ' ++  error.description ++ '\nError Type: ' ++ error.errorType.identifier ++ '\n']"/>
+			<set-payload value="#[output application/json --- []]" doc:name="Set Payload" doc:id="057b27a8-3447-43c2-bc13-3c0a21716105" />
+			<set-variable value="true" doc:name="Set Variable" doc:id="8e1d0351-ba03-4e78-bf20-b7342e5391d5" variableName="errorFlag"/>
+		</on-error-continue>	
+	</error-handler>
+</mule>
